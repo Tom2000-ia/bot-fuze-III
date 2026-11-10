@@ -677,9 +677,11 @@ def api_bot_command():
     asyncio.run_coroutine_threadsafe(trigger_command(), bot.loop)
     return jsonify({'status': 'success', 'message': f'Commande {cmd} exécutée !'})
 
-def run_flask():
-    app.run(host='127.0.0.1', port=5001, debug=False, use_reloader=False)
+import os
 
+def run_flask():
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 if __name__ == "__main__":
     threading.Thread(target=run_flask, daemon=True).start()
     bot.run(os.getenv('DISCORD_TOKEN'))
