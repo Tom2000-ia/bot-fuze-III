@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUZE III - Ultimate Web Control</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d0614;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+        .nav-tab {
+            background: #180b29;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #d8b4fe;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .nav-tab.active, .nav-tab:hover {
+            background: #9333ea;
+            color: white;
+            box-shadow: 0 0 10px #c084fc;
+        }
+        .discord-status {
+            background: #180b29;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #22c55e;
+        }
+        h1, h2, h3 {
+            color: #d8b4fe;
+            margin-top: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .main-panel, .side-panel {
+            background: #180b29;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        input, button, select {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+        input[type="text"], select {
+            background: #271542;
+            color: white;
+            border: 1px solid #7c3aed;
+        }
+        input[type="text"] { width: 75%; }
+        button {
+            background: linear-gradient(135deg, #9333ea, #c084fc);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 10px #c084fc;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .result-item, .queue-item, .playlist-item, .cmd-item {
+            background: #221038;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+        }
+        .result-info { display: flex; align-items: center; gap: 15px; }
+        .result-thumb { width: 60px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #7c3aed; }
+        .playlist-item { cursor: pointer; flex-direction: column; align-items: flex-start; }
+        .playlist-header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .playlist-songs { margin-top: 10px; width: 100%; padding-left: 10px; border-left: 2px solid #7c3aed; display: none; }
+        .song-line { font-size: 14px; color: #d8b4fe; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .song-line a { color: #c084fc; text-decoration: none; }
+        .song-line a:hover { text-decoration: underline; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tuto-box { background: #221038; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #c084fc; }
+        .playlist-creator-box { background: #221038; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #9333ea; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h2 style="margin: 0; color: #d8b4fe;">🎵 FUZE III</h2>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('home')">Musique & Playlists</button>
+                <button class="nav-tab" onclick="switchTab('commands')">Commandes Bot</button>
+                <button class="nav-tab" onclick="switchTab('tuto')">Tuto & Aide</button>
+            </div>
+        </div>
+        <div class="discord-status">
+            <div class="status-dot"></div>
+            <span>Connecté à Discord</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-panel">
+            
+            <!-- ONGLET 1 : MUSIQUE & PLAYLISTS -->
+            <div id="tab-home" class="tab-content active">
+                <h1>Ultimate Web Control</h1>
+                <p>Pilotage en temps réel synchronisé avec Discord.</p>
+
+                <div class="search-bar">
+                    <input type="text" id="searchQuery" placeholder="Rechercher un titre ou coller un lien YouTube..." onkeydown="if(event.key === 'Enter') searchMusic()">
+                    <button id="searchBtn" onclick="searchMusic()">Rechercher</button>
+                </div>
+
+                <div id="searchResults"></div>
+
+                <div style="margin-top: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2>📜 Gestion des Playlists</h2>
+                        <button onclick="togglePlaylistCreator()" style="padding: 8px 12px; font-size: 14px;">➕ Créer / Gérer</button>
+                    </div>
+
+                    <!-- Espace de création / gestion des playlists -->
+                    <div id="playlistCreatorPanel" class="playlist-creator-box" style="display: none;">
+                        <h3>🛠️ Créer ou Gérer une Playlist</h3>
+                        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                            <input type="text" id="newPlaylistName" placeholder="Nom de la nouvelle playlist..." style="width: 70%;">
+                            <button onclick="createPlaylist()" style="width: 28%;">Créer</button>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="targetPlaylistSelect" style="width: 70%;">
+                                <option value="">-- Choisir une playlist à supprimer --</option>
+                            </select>
+                            <button onclick="deleteSelectedPlaylist()" style="width: 28%; background: linear-gradient(135deg, #ef4444, #f87171);">Supprimer</button>
+                        </div>
+                    </div>
+
+                    <div id="playlistsContainer">Chargement des playlists...</div>
+                </div>
+            </div>
+
+            <!-- ONGLET 2 : COMMANDES BOT -->
+            <div id="tab-commands" class="tab-content">
+                <h1>⚡ Commandes Rapides</h1>
+                <p>Exécute les commandes du bot instantanément sur ton salon Discord :</p>
+                
+                <div class="cmd-item">
+                    <span><strong>/join</strong> - Fait rejoindre le bot dans ton salon vocal</span>
+                    <button onclick="triggerBotCommand('join')">Exécuter</button>
+                </div>
+                <div class="cmd-item">
+                    <span><strong>/skip</strong> - Passe la musique en cours</span>
+                    <button onclick="triggerBotCommand('skip')">Exécuter</button>
+                </div>
+                <div class="cmd-item">
+                    <span><strong>/replay</strong> - Relance la dernière musique jouée</span>
+                    <button onclick="triggerBotCommand('replay')">Exécuter</button>
+                </div>
+                <div class="cmd-item">
+                    <span><strong>/stop</strong> - Arrête la musique et déconnecte le bot</span>
+                    <button style="background: linear-gradient(135deg, #ef4444, #f87171);" onclick="triggerBotCommand('stop')">Exécuter</button>
+                </div>
+                <div class="cmd-item">
+                    <span><strong>/leave</strong> - Fait quitter le bot du vocal</span>
+                    <button style="background: linear-gradient(135deg, #ef4444, #f87171);" onclick="triggerBotCommand('leave')">Exécuter</button>
+                </div>
+                <div class="cmd-item">
+                    <span><strong>/clear_all</strong> - Nettoie et réinitialise entièrement le salon textuel</span>
+                    <button style="background: linear-gradient(135deg, #ef4444, #f87171);" onclick="triggerBotCommand('clear_all')">Exécuter</button>
+                </div>
+            </div>
+
+            <!-- ONGLET 3 : TUTO & AIDE -->
+            <div id="tab-tuto" class="tab-content">
+                <h1>📖 Guide & Commandes Slash (Tuto)</h1>
+                <p>Voici l'explication complète des commandes disponibles :</p>
+
+                <div class="tuto-box">
+                    <strong>/site</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Affiche le lien cliquable pour ouvrir ce tableau de bord web.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/playlist menu</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Ouvre le menu interactif Discord pour créer, modifier et lancer des playlists.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/playlist shuffle [nom]</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Mélange et lance une playlist entière de manière aléatoire.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/volume [0-100]</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Modifie le volume sonore du bot en temps réel.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/queue</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Affiche la liste de toutes les musiques en attente.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/info</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Affiche les détails de la musique en cours avec les boutons interactifs.</p>
+                </div>
+                <div class="tuto-box">
+                    <strong>/history</strong>
+                    <p style="margin: 5px 0 0 0; color: #d8b4fe; font-size: 14px;">Affiche l'historique des derniers sons écoutés.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="side-panel">
+            <h2>🎧 Lecture en cours</h2>
+            <div id="currentPlaying" style="background: #221038; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <em>Aucune musique en cours</em>
+            </div>
+
+            <h2>⏳ File d'attente</h2>
+            <div id="queueContainer">
+                <p>File vide</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function togglePlaylistCreator() {
+            const panel = document.getElementById('playlistCreatorPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function createPlaylist() {
+            const input = document.getElementById('newPlaylistName');
+            const nom = input.value.trim();
+            if (!nom) return alert('Entre un nom de playlist !');
+
+            const res = await fetch('/api/playlists/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nom: nom })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                input.value = '';
+                alert('Playlist créée avec succès !');
+                updateSyncData();
+            } else {
+                alert(data.message || 'Erreur lors de la création');
+            }
+        }
+
+        async function deleteSelectedPlaylist() {
+            const select = document.getElementById('targetPlaylistSelect');
+            const nom = select.value;
+            if (!nom) return alert('Sélectionne une playlist à supprimer !');
+
+            if (!confirm(`Es-tu sûr de vouloir supprimer la playlist "${nom}" ?`)) return;
+
+            const res = await fetch('/api/playlists/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nom: nom })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Playlist supprimée !');
+                updateSyncData();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        async function addSongToPlaylist(plName) {
+            const songName = prompt(`Ajouter une musique dans la playlist "${plName}" :`);
+            if (!songName || !songName.trim()) return;
+
+            const res = await fetch('/api/playlists/add-song', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nom: plName, morceau: songName.trim() })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Morceau ajouté avec succès !');
+                updateSyncData();
+            } else {
+                alert('Erreur lors de l\'ajout du morceau.');
+            }
+        }
+
+        async function removeSongFromPlaylist(plName, index) {
+            if (!confirm('Supprimer ce morceau de la playlist ?')) return;
+
+            const res = await fetch('/api/playlists/remove-song', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nom: plName, index: index })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                updateSyncData();
+            } else {
+                alert('Erreur lors de la suppression.');
+            }
+        }
+
+        async function triggerBotCommand(cmd) {
+            const res = await fetch('/api/bot-command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: cmd })
+            });
+            const data = await res.json();
+            alert(data.message || 'Commande exécutée !');
+            setTimeout(updateSyncData, 500);
+        }
+
+        async function searchMusic() {
+            const queryInput = document.getElementById('searchQuery');
+            const searchBtn = document.getElementById('searchBtn');
+            const resultsDiv = document.getElementById('searchResults');
+            const query = queryInput.value.trim();
+
+            if (!query) return;
+
+            searchBtn.disabled = true;
+            searchBtn.innerText = 'Recherche...';
+            resultsDiv.innerHTML = '<p>🔍 Recherche des morceaux sur YouTube...</p>';
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                resultsDiv.innerHTML = '<h2>Résultats de recherche</h2>';
+
+                if (!data || data.length === 0) {
+                    resultsDiv.innerHTML += '<p>Aucun résultat trouvé.</p>';
+                } else {
+                    data.forEach(track => {
+                        const safeTitle = track.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const thumbHtml = track.thumbnail ? `<img src="${track.thumbnail}" class="result-thumb" alt="Pochette">` : '';
+                        resultsDiv.innerHTML += `
+                            <div class="result-item">
+                                <div class="result-info">
+                                    ${thumbHtml}
+                                    <div>
+                                        <strong>${track.title}</strong> (${track.duration})<br>
+                                        <small>${track.uploader}</small>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <a href="${track.url}" target="_blank" style="color: #c084fc; text-decoration: none; font-size: 14px;">Lien 🔗</a>
+                                    <button onclick="playTrack('${track.url}', '${safeTitle}')">▶ Jouer</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                resultsDiv.innerHTML = '<p style="color: #ef4444;">❌ Erreur de connexion.</p>';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerText = 'Rechercher';
+            }
+        }
+
+        async function playTrack(url, title) {
+            await fetch('/api/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url, title: title })
+            });
+            setTimeout(updateSyncData, 500);
+        }
+
+        async function togglePlaylist(name, elementId) {
+            const container = document.getElementById(elementId);
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+
+            const res = await fetch(`/api/playlist-details?nom=${encodeURIComponent(name)}`);
+            const tracks = await res.json();
+
+            container.innerHTML = '';
+            
+            // Bouton Ajouter un morceau dans la playlist déroulée
+            let addBtnHtml = `<div style="margin: 8px 0;"><button onclick="event.stopPropagation(); addSongToPlaylist('${name}')" style="padding: 4px 10px; font-size: 12px;">➕ Ajouter un morceau</button></div>`;
+            container.innerHTML = addBtnHtml;
+
+            if (!tracks || tracks.length === 0) {
+                container.innerHTML += '<p style="font-size: 13px; color: #aaa; margin: 5px 0;">Playlist vide</p>';
+            } else {
+                tracks.forEach((song, idx) => {
+                    let songUrl = song.startsWith('http') ? song : `https://www.youtube.com/results?search_query=${encodeURIComponent(song)}`;
+                    container.innerHTML += `
+                        <div class="song-line">
+                            <span>${idx + 1}. ${song}</span>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <a href="${songUrl}" target="_blank">Lien 🔗</a>
+                                <button onclick="event.stopPropagation(); removeSongFromPlaylist('${name}', ${idx})" style="padding: 2px 6px; font-size: 11px; background: #ef4444;">❌</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            container.style.display = 'block';
+        }
+
+        async function updateSyncData() {
+            try {
+                const currRes = await fetch('/api/current');
+                const currData = await currRes.json();
+                const currDiv = document.getElementById('currentPlaying');
+                if (currData) {
+                    let thumbHtml = currData.thumbnail ? `<img src="${currData.thumbnail}" style="width:100%; max-height:120px; object-fit:cover; border-radius:6px; margin-bottom:10px;">` : '';
+                    currDiv.innerHTML = `${thumbHtml}<strong>${currData.titre}</strong><br><small>Artiste : ${currData.uploader}</small><br><small>Durée : ${currData.duree}</small>`;
+                } else {
+                    currDiv.innerHTML = '<em>Aucune musique en cours</em>';
+                }
+
+                const queueRes = await fetch('/api/queue');
+                const queueData = await queueRes.json();
+                const queueDiv = document.getElementById('queueContainer');
+                queueDiv.innerHTML = '';
+                if (!queueData || queueData.length === 0) {
+                    queueDiv.innerHTML = '<p>File vide</p>';
+                } else {
+                    queueData.forEach((item, index) => {
+                        queueDiv.innerHTML += `<div class="queue-item"><span>${index + 1}. ${item.title}</span></div>`;
+                    });
+                }
+
+                const plRes = await fetch('/api/playlists');
+                const playlists = await plRes.json();
+                const plDiv = document.getElementById('playlistsContainer');
+                const selectEl = document.getElementById('targetPlaylistSelect');
+                
+                const currentSelected = selectEl.value;
+                selectEl.innerHTML = '<option value="">-- Choisir une playlist à supprimer --</option>';
+                plDiv.innerHTML = '';
+
+                if (!playlists || Object.keys(playlists).length === 0) {
+                    plDiv.innerHTML = '<p>Aucune playlist enregistrée.</p>';
+                } else {
+                    let i = 0;
+                    for (const [name, tracks] of Object.entries(playlists)) {
+                        const count = Array.isArray(tracks) ? tracks.length : 0;
+                        const listId = `pl_list_${i}`;
+                        
+                        const opt = document.createElement('option');
+                        opt.value = name;
+                        opt.textContent = name;
+                        selectEl.appendChild(opt);
+
+                        plDiv.innerHTML += `
+                            <div class="playlist-item" onclick="togglePlaylist('${name}', '${listId}')">
+                                <div class="playlist-header">
+                                    <span><strong>📂 ${name}</strong> (${count} sons)</span>
+                                    <small style="color: #c084fc;">Cliquez pour voir ▾</small>
+                                </div>
+                                <div id="${listId}" class="playlist-songs" onclick="event.stopPropagation()"></div>
+                            </div>
+                        `;
+                        i++;
+                    }
+                    selectEl.value = currentSelected;
+                }
+            } catch (e) {
+                console.error("Erreur synchro :", e);
+            }
+        }
+
+        setInterval(updateSyncData, 2000);
+        updateSyncData();
+    </script>
+</body>
+</html>
